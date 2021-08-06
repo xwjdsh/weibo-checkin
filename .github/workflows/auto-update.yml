@@ -1,0 +1,19 @@
+name: 'auto update'
+on: [push, pull_request]
+# on:
+  # schedule:
+    # - cron: '0 21 * * *'
+
+jobs:
+  auto-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+      - name: Generate README.md
+        env:
+          COOKIE: ${{ secrets.COOKIE }}
+        run: |
+          go run ./cmd/weibo-checkin
