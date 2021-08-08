@@ -56,7 +56,7 @@ type SuperTopic struct {
 }
 
 func (h *Handler) SuperTopics(ctx context.Context) (*SuperTopicsResult, error) {
-	urlStr := "https://weibo.com/ajax/profile/topicContent?tabid=231093_-_chaohua&page={}"
+	urlStr := "https://weibo.com/ajax/profile/topicContent?tabid=231093_-_chaohua"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlStr, nil)
 	if err != nil {
 		return nil, err
@@ -120,17 +120,20 @@ func (h *Handler) SuperTopicSignIn(ctx context.Context, id string) error {
 		return err
 	}
 	var result struct {
-		Code int    `json:"code"`
-		Msg  string `json:"msg"`
+		Code interface{} `json:"code"`
+		Msg  string      `json:"msg"`
 	}
 	if err := json.Unmarshal(data, &result); err != nil {
 		return err
 	}
-	switch result.Code {
-	case 100000:
-	case 382004: // signed
-	default:
+
+	if v, ok := result.Code.(string); ok && v != "100000" {
 		return fmt.Errorf("weibo: super topic sign in error, %s", string(data))
 	}
+
+	if v, ok := result.Code.(float64); ok && v != 382004 {
+		return fmt.Errorf("weibo: super topic sign in error, %s", string(data))
+	}
+
 	return nil
 }
